@@ -18,7 +18,7 @@ class PictureResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'user' => UserResource::collection($this->user),
+            'user' => new UserResource($this->user),
             'genre' => new GenreResource($this->genre),
             'description' => $this->description,
             'price' => $this->price,

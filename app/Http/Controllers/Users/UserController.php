@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Users;
 
 use App\Http\Middleware\Authenticate;
 use App\Http\Requests\UserRequest;
@@ -8,9 +8,11 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use http\Env\Response;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 
 class UserController extends Controller
@@ -112,6 +114,7 @@ class UserController extends Controller
                 'password_error' => $validation->errors()->first('password')
             ], 400);
         }
+
         $user = User::query()->where('login', $request->input('login'))->where('password', md5($request->input('password')))->first();
         if ($user) {
             $token = $user->createToken($request->input('login'));
@@ -165,15 +168,12 @@ class UserController extends Controller
 
     public function update(Request $request)
     {
-
-        $userId = isset($user) ? $user->id : null;
-
+        $user = auth()->user();
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:50|regex:/[А-Яа-яЁё]/u',
             'surname' => 'required|string|max:50|regex:/[А-Яа-яЁё]/u',
             'patronymic' => 'nullable|string|max:50|regex:/[А-Яа-яЁё]/u',
-            'login' => 'required|string|max:50|regex:/[A-Za-z]/u||unique:users',
-            'email' => 'required|string|max:50|email',
+            'email' => ['required','string','max:50','email', Rule::unique('users')->ignore($user->id)],
             'password' => 'required|string|max:50|min:6',
             'new_password' => 'nullable|string|max:50|min:6|confirmed',
             'phone' => 'nullable|string|max:50',
@@ -188,10 +188,6 @@ class UserController extends Controller
                 'patronymic.max' => 'не более 50 символов',
                 'patronymic.regex' => 'только символы кириллицы',
                 'surname.required' => 'обязательно для заполнения',
-                'login.required' => 'обязательно для заполнения',
-                'login.max' => 'не более 50 символов',
-                'login.regex' => 'только символы латиницы',
-                'login.unique' => 'логин уже используется',
                 'email.max' => 'не более 50 символов',
                 'email.email' => 'некоректный тип',
                 'email.unique' => 'email уже используется',
@@ -212,7 +208,6 @@ class UserController extends Controller
                 'name_error' => $validation->errors()->first('name'),
                 'surname_error' => $validation->errors()->first('surname'),
                 'patronymic_error' => $validation->errors()->first('patronymic'),
-                'login_error' => $validation->errors()->first('login'),
                 'email_error' => $validation->errors()->first('email'),
                 'password_error' => $validation->errors()->first('password'),
                 'new_password_error' => $validation->errors()->first('new_password'),
@@ -220,9 +215,9 @@ class UserController extends Controller
                 'avatar_error' => $validation->errors()->first('avatar'),
             ], 400);
         }
-         $user = Auth::user();
+
         if ($user){
-            if (md5($request->input('password')) === $user->password) {
+            if (md5($request->input('password')) == $user->password) {
                 if ($request->file('img')) {
                     $path = $request->file('img')->store('/img');
                     $user->avatar = '/storage/' . $path;
@@ -231,9 +226,10 @@ class UserController extends Controller
                 $user->surname = $request->input('surname');
                 $user->patronymic = $request->input('patronymic');
                 $user->email = $request->input('email');
-                $user->login = $request->input('login');
                 $user->phone = $request->input('phone');
-                $user->password = md5($request->input('new_password'));
+                if ($request->input('new_password') !== null){
+                    $user->password = md5($request->input('new_password'));
+                }
                 $user->save();
                 return response()->json([
                     'message' => 'ваши данные успешно изменены'

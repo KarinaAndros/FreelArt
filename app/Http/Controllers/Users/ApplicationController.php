@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Users;
 
 use App\Http\Requests\ApplicationRequest;
 use App\Http\Resources\ApplicationResource;
@@ -11,6 +11,7 @@ use App\Models\Application;
 use App\Models\Genre;
 use App\Models\Picture;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -40,7 +41,7 @@ class ApplicationController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
@@ -78,7 +79,14 @@ class ApplicationController extends Controller
                 'application_category_error' => $validation->errors()->first('application_category_id'),
             ], 400);
         }
-        Application::create($validation->validated());
+       $application = new Application();
+        $application->genre_id = $request->input('genre_id');
+        $application->description = $request->input('description');
+        $application->payment = $request->input('payment');
+        $application->writing_technique = $request->input('writing_technique');
+        $application->deadline = $request->input('deadline');
+        $application->application_category_id = $request->input('application_category_id');
+        $application->save();
         return response()->json([
             'message' => 'Заявка успешно создана'
         ]);

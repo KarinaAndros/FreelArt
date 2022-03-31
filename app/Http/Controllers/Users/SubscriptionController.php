@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Users;
 
 use App\Http\Resources\SubscriptionResource;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 
 class SubscriptionController extends Controller

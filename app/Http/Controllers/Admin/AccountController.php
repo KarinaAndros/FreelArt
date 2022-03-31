@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\AccountRequest;
 use App\Http\Resources\AccountResource;
 use App\Models\Account;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 
 class AccountController extends Controller

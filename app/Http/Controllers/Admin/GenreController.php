@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\GenreRequest;
 use App\Http\Resources\ApplicationResource;
@@ -9,6 +9,7 @@ use App\Models\Application;
 use App\Models\Genre;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 use function Symfony\Component\HttpFoundation\all;
 
@@ -71,7 +72,7 @@ class GenreController extends Controller
     {
         $genre = Genre::find($id);
         if ($genre) {
-            return new ApplicationResource($genre);
+            return new GenreResource($genre);
         }
         return response()->json([
             'message' => 'Не существует'

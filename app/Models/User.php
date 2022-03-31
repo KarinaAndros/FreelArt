@@ -48,4 +48,14 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+
+    public function applications(){
+        return $this->belongsToMany(Application::class, 'favorite_applications');
+    }
+
+    public function pictures()
+    {
+        return $this->belongsToMany(Picture::class, 'favorite_pictures');
+    }
 }

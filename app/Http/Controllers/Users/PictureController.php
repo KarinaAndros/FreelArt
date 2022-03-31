@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Users;
 
 use App\Http\Requests\PictureRequest;
 use App\Http\Resources\AccountResource;
@@ -10,6 +10,7 @@ use App\Models\Account;
 use App\Models\Application;
 use App\Models\Picture;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 
 class PictureController extends Controller
@@ -89,7 +90,7 @@ class PictureController extends Controller
         if ($request->file('img')) {
             $path = $request->file('img')->store('/img');
         }
-        $picture = new Picture($request->validated());
+        $picture = new Picture();
         $picture->title = $request->input('title');
         $picture->genre_id = $request->input('genre_id');
         $picture->user_id = auth()->user()->id;
