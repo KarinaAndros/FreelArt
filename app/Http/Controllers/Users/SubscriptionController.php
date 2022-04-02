@@ -4,16 +4,23 @@ namespace App\Http\Controllers\Users;
 
 use App\Http\Resources\SubscriptionResource;
 use App\Models\Subscription;
+use App\Notifications\InvoicePaid;
+use http\Env\Response;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+
+
 
 class SubscriptionController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index()
     {
@@ -34,7 +41,7 @@ class SubscriptionController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|MailMessage
      */
     public function store(Request $request)
     {
@@ -54,13 +61,17 @@ class SubscriptionController extends Controller
             ], 400);
         }
         $subscription = new Subscription();
+        $subscription->user_id = auth()->user()->id;
         $subscription->user_email = $request->input('user_email');
         $subscription->save();
-
+        Mail::send(['text' => 'mails.subscription'], ['name', 'FreelArt'], function ($message) use ($subscription) {
+            $message->to($subscription->user_email, 'FreelArt')->subject('Рассылка');
+            $message->from('ffreelart@mail.ru', 'FreelArt');
+        });
+//        Notification::send($subscription, new InvoicePaid());
         return response()->json([
             'message' => 'Вы подписаны на рассылку'
         ]);
-
 
     }
 
@@ -91,22 +102,31 @@ class SubscriptionController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Subscription $subscription
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function update($id)
+    public function update()
     {
-        $subscription = Subscription::find($id);
-        if ($subscription) {
-            $subscription->status = 'приостоновлена';
-            $subscription->save();
-            return response()->json([
-                'message' => 'Подписка на рассылку приостоновлена. Её можно возобновить в своём личном кабинете'
-            ]);
+        $subscription = Subscription::query()->where('user_id', auth()->user()->id)->first();
+
+        if ($subscription){
+            if ($subscription->status == "действительна"){
+                $subscription->status = 'приостоновлена';
+                $subscription->save();
+                return response()->json([
+                    'message' => 'рассылка приостановлена'
+                ]);
+            }
+            else{
+                $subscription->status = 'действительна';
+                $subscription->save();
+                return response()->json([
+                    'message' => 'вы снова подписаны на рассылку'
+                ]);
+            }
         }
         return response()->json([
-            'message' => 'Не существует'
+            'message' => 'не найдена'
         ]);
-
     }
 
     /**

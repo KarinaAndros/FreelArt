@@ -1,5 +1,9 @@
 <?php
 
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 use \App\Http\Controllers\Users\UserController;
@@ -29,5 +33,7 @@ Route::get('/users/login/form', [PageController::class, 'login_user'])->name('us
 Route::group(['middleware' => ['role:admin']], function () {
     Route::get('/genres', [PageController::class, 'genres'])->name('genres');
 });
+
+
 
 

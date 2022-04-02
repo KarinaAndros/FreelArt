@@ -13,10 +13,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Auth\Events\Registered;
 
 
 class UserController extends Controller
 {
+    public function index(){
+        return UserResource::collection(User::all());
+    }
+
     public function store(Request $request)
     {
         $validation = Validator::make($request->all(), [
@@ -94,7 +99,13 @@ class UserController extends Controller
         }
         $user->password = md5($request->input('password'));
         $user->save();
+
+        event(new Registered($user));
         $token = $user->createToken($request->input('login'))->plainTextToken;
+
+//        auth()->login($user);
+
+//        return redirect()->route('verification.notice');
         return response()->json(['token' => $token], 200);
     }
 
@@ -145,7 +156,7 @@ class UserController extends Controller
 
     public function show($id)
     {
-        $user = User::find($id);
+        $user = User::findOrFals($id);
         if ($user) {
             return new UserResource($user);
         }

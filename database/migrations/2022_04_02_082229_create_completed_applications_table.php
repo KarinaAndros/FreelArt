@@ -1,11 +1,10 @@
 <?php
 
-use App\Models\Account;
-use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Carbon\Carbon;
+use App\Models\User;
+use App\Models\Application;
 
 return new class extends Migration
 {
@@ -16,13 +15,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('account_users', function (Blueprint $table) {
+        Schema::create('completed_applications', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignIdFor(Account::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->dateTime('start_action');
-            $table->dateTime('end_action')->nullable();
-            $table->string('status')->default('действителен');
+            $table->foreignIdFor(Application::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->softDeletes();
             $table->timestamps();
         });
@@ -35,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('account_users');
+        Schema::dropIfExists('completed_applications');
     }
 };

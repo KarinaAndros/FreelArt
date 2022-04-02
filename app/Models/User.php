@@ -10,7 +10,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 
-class User extends Authenticatable
+
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
@@ -57,5 +58,13 @@ class User extends Authenticatable
     public function pictures()
     {
         return $this->belongsToMany(Picture::class, 'favorite_pictures');
+    }
+
+    public function subscription(){
+        return $this->belongsTo(Subscription::class);
+    }
+
+    public function completed_applications(){
+        return $this->hasMany(CompletedApplication::class);
     }
 }

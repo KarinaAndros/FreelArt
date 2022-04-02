@@ -80,6 +80,7 @@ class ApplicationController extends Controller
             ], 400);
         }
        $application = new Application();
+        $application->user_id = auth()->user()->id;
         $application->genre_id = $request->input('genre_id');
         $application->description = $request->input('description');
         $application->payment = $request->input('payment');

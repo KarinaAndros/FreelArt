@@ -11,7 +11,6 @@ Route::get('/user', function (Request $request) {return auth()->user();}); //П�
 Route::put('/users', [UserController::class, 'update'])->name('users.update'); //Изменение данных
 Route::get('/profile', [UserController::class, 'profile'])->name('profile'); //Переход в профиль
 Route::post('/logout', [UserController::class, 'logout'])->name('logout');   //Выход
-Route::put('/subscriptions/{id}', [SubscriptionController::class, 'update'])->name('subscriptions.update'); //Остановка подписки
 Route::post('/orders/{id}', [OrderController::class, 'store'])->name('orders.store'); //Создание заказа
 Route::get('/orders', [OrderController::class, 'index'])->name('orders'); //Вывод заказов
 Route::post('/favorite_pictures/{id}', [FavoritePictureController::class, 'store'])->name('favorite_pictures.store'); //Добавление картин в избранное

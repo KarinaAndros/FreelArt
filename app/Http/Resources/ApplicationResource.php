@@ -16,6 +16,7 @@ class ApplicationResource extends JsonResource
     public function toArray($request)
     {
         return [
+            'id' => $this->id,
             'genre' => new GenreResource($this->genre),
             'user' => new ApplicationUserResource($this->user),
             'application_category_id' => new ApplicationCategoryResource($this->application_category),
