@@ -24,6 +24,7 @@ class UserResource extends JsonResource
             'password' => $this->password,
             'phone' => $this->phone,
             'avatar' => $this->avatar,
+            'accounts' => AccountResource::collection($this->accounts)
         ];
     }
 }

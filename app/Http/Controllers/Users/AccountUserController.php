@@ -35,11 +35,20 @@ class AccountUserController extends Controller
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
-
+            $account = Account::query()->where('title', 'PRO аккаунт')->first();
+            $account_user = new AccountUser();
+            $account_user->user_id = auth()->user()->id;
+            $account_user->account_id = $account->id;
+            $account_user->start_action = Carbon::now();
+            $account_user->end_action = Carbon::now()->addMonth(2);
+            $account_user->save();
+            return response()->json([
+                'message' => 'Вы приобрели PRO аккаунт'
+            ]);
     }
 
     /**

@@ -14,13 +14,29 @@ class AccountResource extends JsonResource
      */
     public function toArray($request)
     {
+
+        $user = auth()->user();
+        if ($user){
+            if ($user->hasRole('admin')){
+                return [
+
+                    'id' => $this->id,
+                    'title' => $this->title,
+                    'description' => $this->description,
+                    'price' => $this->price,
+                    'discount' => $this->discount,
+                    'application_category' => new ApplicationCategoryResource($this->application_category),
+                ];
+            }
+            else{
+                return [
+                    'title' => $this->title,
+                ];
+            }
+
+        }
         return [
-            'id' => $this->id,
             'title' => $this->title,
-            'description' => $this->description,
-            'price' => $this->price,
-            'discount' => $this->discount,
-            'application_category' => new ApplicationCategoryResource($this->application_category),
         ];
     }
 }

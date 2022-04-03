@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Users;
 use App\Http\Middleware\Authenticate;
 use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
+use App\Models\Account;
+use App\Models\AccountUser;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use http\Env\Response;
 use Illuminate\Routing\Controller;
@@ -18,7 +21,8 @@ use Illuminate\Auth\Events\Registered;
 
 class UserController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         return UserResource::collection(User::all());
     }
 
@@ -106,6 +110,12 @@ class UserController extends Controller
 //        auth()->login($user);
 
 //        return redirect()->route('verification.notice');
+        $account = Account::query()->where('title', 'Базовый аккаунт')->first();
+        $account_user = new AccountUser();
+        $account_user->user_id = $user->id;
+        $account_user->account_id = $account->id;
+        $account_user->start_action = Carbon::now();
+        $account_user->save();
         return response()->json(['token' => $token], 200);
     }
 
@@ -184,7 +194,7 @@ class UserController extends Controller
             'name' => 'required|string|max:50|regex:/[А-Яа-яЁё]/u',
             'surname' => 'required|string|max:50|regex:/[А-Яа-яЁё]/u',
             'patronymic' => 'nullable|string|max:50|regex:/[А-Яа-яЁё]/u',
-            'email' => ['required','string','max:50','email', Rule::unique('users')->ignore($user->id)],
+            'email' => ['required', 'string', 'max:50', 'email', Rule::unique('users')->ignore($user->id)],
             'password' => 'required|string|max:50|min:6',
             'new_password' => 'nullable|string|max:50|min:6|confirmed',
             'phone' => 'nullable|string|max:50',
@@ -227,7 +237,7 @@ class UserController extends Controller
             ], 400);
         }
 
-        if ($user){
+        if ($user) {
             if (md5($request->input('password')) == $user->password) {
                 if ($request->file('img')) {
                     $path = $request->file('img')->store('/img');
@@ -238,7 +248,7 @@ class UserController extends Controller
                 $user->patronymic = $request->input('patronymic');
                 $user->email = $request->input('email');
                 $user->phone = $request->input('phone');
-                if ($request->input('new_password') !== null){
+                if ($request->input('new_password') !== null) {
                     $user->password = md5($request->input('new_password'));
                 }
                 $user->save();

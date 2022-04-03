@@ -67,4 +67,8 @@ class User extends Authenticatable implements MustVerifyEmail
     public function completed_applications(){
         return $this->hasMany(CompletedApplication::class);
     }
+
+    public function accounts(){
+        return $this->belongsToMany(Account::class, 'account_users');
+    }
 }
