@@ -8,6 +8,7 @@ use App\Http\Resources\ApplicationResource;
 use App\Http\Resources\PictureResource;
 use App\Models\Account;
 use App\Models\Application;
+use App\Models\Genre;
 use App\Models\Picture;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -15,6 +16,29 @@ use Illuminate\Support\Facades\Validator;
 
 class PictureController extends Controller
 {
+
+    public function getPictures(Request $request, $id, $sort, $k, $price){
+        $pictures = PictureResource::collection(Picture::all());
+        if ($sort !== '0'){
+            if (($sort == 'price' && $k == 'max') || ($sort == 'created_at' && $k == 'max')){
+                $pictures = $pictures->sortByDesc($sort);
+            }
+            else{
+                $pictures = $pictures->sortBy($sort);
+            }
+        }
+        if ($id !== '0'){
+            $pictures = $pictures->where('genre_id', $id);
+        }
+        if ($price == '50') {
+            $pictures = $pictures->filter(function ($value, $key){
+               if($value['price'] < '50' && $value['price'] > '0'){
+                   return true;
+               }
+            });
+        }
+        return $pictures;
+    }
     /**
      * Display a listing of the resource.
      *
