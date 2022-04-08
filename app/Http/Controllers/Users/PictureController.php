@@ -17,6 +17,11 @@ use Illuminate\Support\Facades\Validator;
 class PictureController extends Controller
 {
 
+    public function PicturesMain(){
+        $pictures = Picture::query()->limit(5)->orderByDesc('created_at')->get();
+        return PictureResource::collection($pictures);
+    }
+
     public function getPictures(Request $request, $id, $sort, $k, $price){
         $pictures = PictureResource::collection(Picture::all());
         if ($sort !== '0'){

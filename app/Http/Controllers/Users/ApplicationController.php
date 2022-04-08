@@ -17,6 +17,11 @@ use Illuminate\Support\Facades\Validator;
 
 class ApplicationController extends Controller
 {
+
+    public function ApplicationMain(){
+        $applications = Application::query()->limit(2)->orderByDesc('created_at')->get();
+        return ApplicationResource::collection($applications);
+    }
     /**
      * Display a listing of the resource.
      *

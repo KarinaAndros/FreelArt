@@ -198,6 +198,7 @@ class UserController extends Controller
             'password' => 'required|string|max:50|min:6',
             'new_password' => 'nullable|string|max:50|min:6|confirmed',
             'phone' => 'nullable|string|max:50',
+            'link' => 'nullable|string|url',
             'avatar' => 'nullable|file|image|max:1024',
         ],
             [
@@ -220,6 +221,7 @@ class UserController extends Controller
                 'new_password.min' => 'не менее 6 символов',
                 'new_password.confirmed' => 'новый пароль не подтверждён',
                 'phone.max' => 'не более 50 символов',
+                'link.url' => 'некоректная ссылка',
                 'avatar.file' => 'должен быть выбран файл',
                 'avatar.image' => 'должно быть выбрано изображение',
                 'avatar.max' => 'не более 1КБ',
@@ -234,6 +236,7 @@ class UserController extends Controller
                 'new_password_error' => $validation->errors()->first('new_password'),
                 'phone_error' => $validation->errors()->first('phone'),
                 'avatar_error' => $validation->errors()->first('avatar'),
+                'link_error' => $validation->errors()->first('link'),
             ], 400);
         }
 
@@ -251,6 +254,7 @@ class UserController extends Controller
                 if ($request->input('new_password') !== null) {
                     $user->password = md5($request->input('new_password'));
                 }
+
                 $user->save();
                 return response()->json([
                     'message' => 'ваши данные успешно изменены'
