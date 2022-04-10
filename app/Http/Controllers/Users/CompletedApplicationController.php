@@ -7,6 +7,7 @@ use App\Http\Resources\CompletedApplicationResource;
 use App\Models\Account;
 use App\Models\AccountUser;
 use App\Models\Application;
+use App\Models\ApplicationUser;
 use App\Models\CompletedApplication;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -51,15 +52,20 @@ class CompletedApplicationController extends Controller
      */
     public function store($id)
     {
-        $account = Account::query()->where('title', 'PRO аккаунт')->first();
-        $application = Application::findOrFail($id);
-        if ($application) {
+
+        $application_user = ApplicationUser::findOrFail($id);
+        if ($application_user->status == 'вы исполнитель') {
             $completed_application = new CompletedApplication();
             $completed_application->user_id = auth()->user()->id;
-            $completed_application->application_id = $application->id;
+            $completed_application->application_id = $application_user->application_id;
             $completed_application->save();
+            $application_user->delete();
+            return response()->json([
+                'message' => 'Заявка выполнена'
+            ]);
 
             $counts = CompletedApplicationResource::collection(auth()->user()->completed_applications)->keys();
+            $account = Account::query()->where('title', 'PRO аккаунт')->first();
             if ($counts->count() == '20'){
                 $account_user = new AccountUser();
                 $account_user->user_id = auth()->user()->id;
@@ -72,12 +78,12 @@ class CompletedApplicationController extends Controller
             }
 
         }
+        else{
+            return response()->json([
+                'message' => 'Вы не назначены исполнителем'
+            ]);
+        }
 
-//        else{
-//            return response()->json([
-//                'message' => 'Не найдено'
-//            ]);
-//        }
     }
 
     /**

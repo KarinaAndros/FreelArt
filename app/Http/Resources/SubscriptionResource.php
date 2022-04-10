@@ -14,11 +14,18 @@ class SubscriptionResource extends JsonResource
      */
     public function toArray($request)
     {
+        if (auth()->user()){
+            if (auth()->user()->hasRole('admin')){
+                return [
+                    'id' => $this->id,
+                    'user_email' => $this->user_email,
+                    'status' => $this->status,
+                    'updated_at' => $this->created_at
+                ];
+            }
+        }
         return [
-            'id' => $this->id,
-            'user_email' => $this->user_email,
             'status' => $this->status,
-            'updated_at' => $this->updated_at
         ];
     }
 }

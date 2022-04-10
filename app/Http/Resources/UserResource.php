@@ -14,32 +14,19 @@ class UserResource extends JsonResource
      */
     public function toArray($request)
     {
-        if ($this->hasRole('executor')){
+
             return[
-                'id' => $this->id,
                 'name' => $this->name,
                 'surname' => $this->surname,
                 'patronymic' => $this->patronymic,
-                'login' => $this->login,
                 'email' => $this->email,
-                'password' => $this->password,
                 'phone' => $this->phone,
+                'link' => $this->when($this->hasRole('executor'), $this->link),
                 'avatar' => $this->avatar,
-                'link' => $this->link,
+                'subscription' => SubscriptionResource::collection($this->subscription),
                 'accounts' => AccountResource::collection($this->accounts)
             ];
-        }
-        return[
-            'id' => $this->id,
-            'name' => $this->name,
-            'surname' => $this->surname,
-            'patronymic' => $this->patronymic,
-            'login' => $this->login,
-            'email' => $this->email,
-            'password' => $this->password,
-            'phone' => $this->phone,
-            'avatar' => $this->avatar,
-            'accounts' => AccountResource::collection($this->accounts)
-        ];
+
+
     }
 }

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(Application::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->text('message');
+            $table->string('status')->default('на рассмотрении');
             $table->softDeletes();
             $table->timestamps();
         });

@@ -37,7 +37,6 @@ class UserController extends Controller
             'password' => 'required|string|max:50|min:6|confirmed',
             'password_confirmation' => 'required|string|max:50|min:6',
             'phone' => 'nullable|string|max:50',
-            'role' => 'required',
             'avatar' => 'nullable|file|image|max:1024',
             'rule' => 'accepted',
         ],
@@ -139,9 +138,6 @@ class UserController extends Controller
         $user = User::query()->where('login', $request->input('login'))->where('password', md5($request->input('password')))->first();
         if ($user) {
             $token = $user->createToken($request->input('login'));
-            if (auth()->user()) {
-                return redirect()->route('profile');
-            }
 
             return response()->json([
                 'message' => 'Успешно',
@@ -166,7 +162,7 @@ class UserController extends Controller
 
     public function show($id)
     {
-        $user = User::findOrFals($id);
+        $user = User::findOrFail($id);
         if ($user) {
             return new UserResource($user);
         }

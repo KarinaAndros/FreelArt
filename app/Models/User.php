@@ -29,6 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'phone',
         'avatar',
+        'link'
     ];
 
     /**
@@ -61,7 +62,7 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     public function subscription(){
-        return $this->belongsTo(Subscription::class);
+        return $this->hasMany(Subscription::class);
     }
 
     public function completed_applications(){
@@ -71,4 +72,9 @@ class User extends Authenticatable implements MustVerifyEmail
     public function accounts(){
         return $this->belongsToMany(Account::class, 'account_users');
     }
+
+    public function responses(){
+        return $this->hasMany(ApplicationUser::class);
+    }
+
 }

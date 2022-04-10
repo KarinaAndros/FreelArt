@@ -34,4 +34,7 @@ class Application extends Model
         return $this->belongsTo(ApplicationCategory::class);
     }
 
+    public function users(){
+        return $this->belongsToMany(User::class, 'application_users')->withPivot('message', 'status');
+    }
 }
