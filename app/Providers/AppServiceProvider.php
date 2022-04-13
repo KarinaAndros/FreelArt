@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -18,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->register(\L5Swagger\L5SwaggerServiceProvider::class);
     }
 
     /**

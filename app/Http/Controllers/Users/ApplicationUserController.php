@@ -15,11 +15,17 @@ class ApplicationUserController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\Response
+     * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Http\JsonResponse|\Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\Response
      */
     public function index()
     {
-       return ApplicationUserResource::collection(auth()->user()->responses);
+        if (auth()->user()->hasRole('executor')){
+            return ApplicationUserResource::collection(auth()->user()->responses);
+        }
+        if (auth()->user()->hasRole('customer')){
+            $customer_applications = auth()->user()->customer_applications;
+            return ApplicationResource::collection($customer_applications);
+        }
     }
 
     /**

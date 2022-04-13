@@ -25,7 +25,7 @@ class ApplicationController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\Response
      */
     public function index()
     {
@@ -103,7 +103,7 @@ class ApplicationController extends Controller
      * Display the specified resource.
      *
      * @param \App\Models\Application $application
-     * @return \Illuminate\Http\Response
+     * @return ApplicationResource|\Illuminate\Http\JsonResponse
      */
     public function show($id)
     {
@@ -132,7 +132,7 @@ class ApplicationController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Application $application
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
@@ -190,7 +190,7 @@ class ApplicationController extends Controller
      * Remove the specified resource from storage.
      *
      * @param \App\Models\Application $application
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function destroy($id)
     {

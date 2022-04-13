@@ -10,48 +10,69 @@ use App\Models\Account;
 use App\Models\Application;
 use App\Models\Genre;
 use App\Models\Picture;
+use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * @OA\Get(
+ * path="/api/pictures",
+ * summary="Картины",
+ * description="Получение данных о картинах из базы",
+
+ * @OA\Response(
+ * response=200,
+ * description="Запрос выполнен удачно",
+ * ),
+ * @OA\Response(
+ * response=404,
+ * description="Ошибка в запросе",
+ * @OA\JsonContent(
+ * @OA\Property(property="message", type="string", example="Не найдено")
+ * )
+ * )
+ * )
+ */
 class PictureController extends Controller
 {
+
 
     public function PicturesMain(){
         $pictures = Picture::query()->limit(5)->orderByDesc('created_at')->get();
         return PictureResource::collection($pictures);
     }
 
-    public function getPictures(Request $request, $id, $sort, $k, $price){
-        $pictures = PictureResource::collection(Picture::all());
-        if ($sort !== '0'){
-            if (($sort == 'price' && $k == 'max') || ($sort == 'created_at' && $k == 'max')){
-                $pictures = $pictures->sortByDesc($sort);
-            }
-            else{
-                $pictures = $pictures->sortBy($sort);
-            }
-        }
-        if ($id !== '0'){
-            $pictures = $pictures->where('genre_id', $id);
-        }
-        if ($price == '50') {
-            $pictures = $pictures->filter(function ($value, $key){
-               if($value['price'] < '50' && $value['price'] > '0'){
-                   return true;
-               }
-            });
-        }
-        return $pictures;
-    }
+//    public function getPictures(Request $request, $id, $sort, $k, $price){
+//        $pictures = PictureResource::collection(Picture::all());
+//        if ($sort !== '0'){
+//            if (($sort == 'price' && $k == 'max') || ($sort == 'created_at' && $k == 'max')){
+//                $pictures = $pictures->sortByDesc($sort);
+//            }
+//            else{
+//                $pictures = $pictures->sortBy($sort);
+//            }
+//        }
+//        if ($id !== '0'){
+//            $pictures = $pictures->where('genre_id', $id);
+//        }
+//        if ($price == '50') {
+//            $pictures = $pictures->filter(function ($value, $key){
+//               if($value['price'] < '50' && $value['price'] > '0'){
+//                   return true;
+//               }
+//            });
+//        }
+//        return $pictures;
+//    }
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\Response
      */
     public function index()
     {
-        return PictureResource::collection(Picture::all());
+        return PictureResource::collection(Picture::query()->where('status', '=', 'одобрено')->get());
     }
 
     /**
@@ -68,7 +89,7 @@ class PictureController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function store(Request $request)
     {
@@ -170,7 +191,7 @@ class PictureController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Picture $picture
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
@@ -249,7 +270,7 @@ class PictureController extends Controller
      * Remove the specified resource from storage.
      *
      * @param \App\Models\Picture $picture
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function destroy($id)
     {

@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('size');
             $table->string('writing_technique');
             $table->string('img');
+            $table->string('status')->default('в обработке');
             $table->softDeletes();
             $table->timestamps();
         });

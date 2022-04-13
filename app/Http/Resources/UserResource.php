@@ -16,6 +16,7 @@ class UserResource extends JsonResource
     {
 
             return[
+                'id' => $this->id,
                 'name' => $this->name,
                 'surname' => $this->surname,
                 'patronymic' => $this->patronymic,
@@ -24,7 +25,8 @@ class UserResource extends JsonResource
                 'link' => $this->when($this->hasRole('executor'), $this->link),
                 'avatar' => $this->avatar,
                 'subscription' => SubscriptionResource::collection($this->subscription),
-                'accounts' => AccountResource::collection($this->accounts)
+                'accounts' => AccountResource::collection($this->accounts),
+                'role' => $this->getRoleNames()
             ];
 
 

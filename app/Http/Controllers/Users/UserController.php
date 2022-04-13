@@ -7,6 +7,7 @@ use App\Http\Requests\UserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Account;
 use App\Models\AccountUser;
+use App\Http\Middleware\VerifyCsrfToken;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -19,8 +20,49 @@ use Illuminate\Validation\Rule;
 use Illuminate\Auth\Events\Registered;
 
 
+/**
+ * @OA\Post(
+ * path="/api/login",
+ * summary="Авторизация",
+ * description="Авторизация с помощью логина и пароля",
+ * @OA\RequestBody(
+ * required=true,
+ * @OA\JsonContent(
+ * required={"login","password"},
+ * @OA\Property(property="login", type="string", example="user1"),
+ * @OA\Property(property="password", type="string", format="password", example="123456"),
+ * ),
+ * ),
+ * @OA\Response(
+ * response=200,
+ * description="Авторизация прошла успешно",
+ * @OA\JsonContent(
+ * @OA\Property(property="message", type="string", example="Авторизация прошла успешно")
+ * )
+ * ),
+ * @OA\Response(
+ * response=400,
+ * description="Данные не введены",
+ * @OA\JsonContent(
+ * @OA\Property(property="message", type="string", example="Все поля являются обязательными для заполнения")
+ * )
+ * ),
+ * @OA\Response(
+ * response=401,
+ * description="Введены неверные данные",
+ * @OA\JsonContent(
+ * @OA\Property(property="message", type="string", example="Введён неверный логин или пароль")
+ * )
+ * )
+ * )
+ */
+
 class UserController extends Controller
 {
+
+    public function lastUsers(){
+        return UserResource::collection(User::query()->limit(3)->orderByDesc('created_at')->get());
+    }
     public function index()
     {
         return UserResource::collection(User::all());
@@ -38,6 +80,7 @@ class UserController extends Controller
             'password_confirmation' => 'required|string|max:50|min:6',
             'phone' => 'nullable|string|max:50',
             'avatar' => 'nullable|file|image|max:1024',
+            'link' => 'nullable|string|url',
             'rule' => 'accepted',
         ],
             [
@@ -68,6 +111,7 @@ class UserController extends Controller
                 'avatar.file' => 'должен быть выбран файл',
                 'avatar.image' => 'должно быть выбрано изображение',
                 'avatar.max' => 'не более 1КБ',
+                'link.url' => 'некоректная ссылка',
             ]);
         if ($validation->fails()) {
             return response()->json([
@@ -81,6 +125,7 @@ class UserController extends Controller
                 'phone_error' => $validation->errors()->first('phone'),
                 'role_error' => $validation->errors()->first('role'),
                 'avatar_error' => $validation->errors()->first('avatar'),
+                'link_error' =>$validation->errors()->first('link'),
                 'rule_error' => $validation->errors()->first('rule'),
             ], 400);
         }
@@ -101,12 +146,11 @@ class UserController extends Controller
             $user->assignRole('user', 'customer');
         }
         $user->password = md5($request->input('password'));
+        $user->link = $request->input('link');
         $user->save();
-
         event(new Registered($user));
         $token = $user->createToken($request->input('login'))->plainTextToken;
-
-//        auth()->login($user);
+        auth()->login($user);
 
 //        return redirect()->route('verification.notice');
         $account = Account::query()->where('title', 'Базовый аккаунт')->first();
@@ -115,7 +159,12 @@ class UserController extends Controller
         $account_user->account_id = $account->id;
         $account_user->start_action = Carbon::now();
         $account_user->save();
-        return response()->json(['token' => $token], 200);
+        return response()->json([
+            'message' => 'Регистрация прошла успешно',
+            'token' => $token,
+            'user' => new UserResource(auth()->user()),
+        ], 200);
+
     }
 
     public function login(Request $request)
@@ -138,11 +187,11 @@ class UserController extends Controller
         $user = User::query()->where('login', $request->input('login'))->where('password', md5($request->input('password')))->first();
         if ($user) {
             $token = $user->createToken($request->input('login'));
-
+            auth()->login($user);
             return response()->json([
                 'message' => 'Успешно',
                 'token' => $token->plainTextToken,
-                'user' => $request->user()
+                'user' => new UserResource($request->user())
             ], 200);
 
         }
@@ -155,7 +204,6 @@ class UserController extends Controller
     {
         if ($request->user()) {
             $request->user()->tokens()->delete();
-            return redirect()->route('home');
             return response()->json(['message' => 'Вы вышли из системы'], 200);
         }
     }

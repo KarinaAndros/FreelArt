@@ -23,6 +23,5 @@ Route::group(['middleware' => ['role:executor']], function () {
 
     //Отклики на заявки
     Route::post('/application_users/{id}', [ApplicationUserController::class, 'store'])->name('application_users.store'); //Отклик на заказ
-    Route::get('/application_users', [ApplicationUserController::class, 'index'])->name('application_users'); //Вывод заявок, на которые откликнулся авторизованный пользователь
     Route::delete('/application_users/{id}', [ApplicationUserController::class, 'destroy'])->name('application_users.delete'); //Удаление заявки на выполнение с отказом и отказ от выполнения заявки с статусом "на рассмотрении"
 });

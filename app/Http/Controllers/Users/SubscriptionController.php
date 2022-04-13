@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Users;
 
 use App\Http\Resources\SubscriptionResource;
+use App\Http\Resources\UserResource;
 use App\Models\Subscription;
+use App\Models\User;
 use App\Notifications\InvoicePaid;
 use http\Env\Response;
 use Illuminate\Http\Request;
@@ -14,9 +16,13 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 
 
-
 class SubscriptionController extends Controller
 {
+    public function lastSubscriptions()
+    {
+        return SubscriptionResource::collection(Subscription::query()->limit(3)->orderByDesc('created_at')->get());
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -108,15 +114,14 @@ class SubscriptionController extends Controller
     {
         $subscription = Subscription::query()->where('user_id', auth()->user()->id)->first();
 
-        if ($subscription){
-            if ($subscription->status == "действительна"){
+        if ($subscription) {
+            if ($subscription->status == "действительна") {
                 $subscription->status = 'приостоновлена';
                 $subscription->save();
                 return response()->json([
                     'message' => 'рассылка приостановлена'
                 ]);
-            }
-            else{
+            } else {
                 $subscription->status = 'действительна';
                 $subscription->save();
                 return response()->json([

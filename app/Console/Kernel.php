@@ -2,6 +2,9 @@
 
 namespace App\Console;
 
+use App\Models\Account;
+use App\Models\AccountUser;
+use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -15,7 +18,14 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->call(function () {
+            $accounts = Account::query()->where('title', '=','PRO аккаунт');
+            $account_users = AccountUser::query()->where('account_id', '=', $accounts->id)->where('deleted_at', '!=', '')->get();
+            $now = Carbon::now();
+            if ($account_users->end_action == $now){
+                $account_users->delete();
+            }
+        })->everyMinute();
     }
 
     /**

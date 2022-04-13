@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\AccountRequest;
 use App\Http\Resources\AccountResource;
+use App\Http\Resources\SubscriptionResource;
 use App\Models\Account;
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -12,10 +14,22 @@ use Illuminate\Support\Facades\Validator;
 
 class AccountController extends Controller
 {
+
+    public function lastAccounts()
+    {
+        $accounts = Account::query()->limit(3)->orderByDesc('created_at')->where('title', '=', 'PRO аккаунт')->get();
+        if ($accounts){
+            return AccountResource::collection($accounts);
+        }
+        return response()->json([
+            'message' => "Пока что ничего нет("
+        ]);
+
+    }
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\Response
      */
     public function index()
     {
@@ -37,7 +51,7 @@ class AccountController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function store(Request $request)
     {
@@ -117,7 +131,7 @@ class AccountController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Account $account
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
@@ -179,7 +193,7 @@ class AccountController extends Controller
      * Remove the specified resource from storage.
      *
      * @param \App\Models\Account $account
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
     public function destroy($id)
     {

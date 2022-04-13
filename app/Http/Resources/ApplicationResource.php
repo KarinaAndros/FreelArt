@@ -29,11 +29,24 @@ class ApplicationResource extends JsonResource
                     'updated_at' => Carbon::now()->sub($this->updated_at)->diffForHumans(),
                 ];
             }
+            if (auth()->user()->hasRole('customer')){
+                return [
+                    'id' => $this->id,
+                    'genre' => new GenreResource($this->genre),
+                    'user' => new UserResource($this->user),
+                    'application_category_id' => new ApplicationCategoryResource($this->application_category),
+                    'description' => $this->description,
+                    'payment' => $this->payment,
+                    'writing_technique' => $this->writing_techique,
+                    'deadline' => Carbon::parse($this->deadline)->format('d.m.y'),
+                    'updated_at' => Carbon::now()->sub($this->updated_at)->diffForHumans(),
+                ];
+            }
         }
         return [
             'id' => $this->id,
             'genre' => new GenreResource($this->genre),
-            'user' => new ApplicationUserResource($this->user),
+            'user' => new UserResource($this->user),
             'application_category_id' => new ApplicationCategoryResource($this->application_category),
             'description' => $this->description,
             'payment' => $this->payment,

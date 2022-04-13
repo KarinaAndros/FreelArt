@@ -18,7 +18,7 @@ class GenreController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection|Response
      */
     public function index()
     {
@@ -39,7 +39,7 @@ class GenreController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|Response
      */
     public function store(Request $request)
     {
@@ -66,7 +66,7 @@ class GenreController extends Controller
      * Display the specified resource.
      *
      * @param \App\Models\Genre $genre
-     * @return \Illuminate\Http\Response
+     * @return GenreResource|\Illuminate\Http\JsonResponse|Response
      */
     public function show($id)
     {
@@ -132,7 +132,7 @@ class GenreController extends Controller
      * Remove the specified resource from storage.
      *
      * @param \App\Models\Genre $genre
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|Response
      */
     public function destroy($id)
     {

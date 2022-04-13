@@ -20,6 +20,8 @@ use \App\Http\Controllers\Users\UserController;
 |
 */
 
+
+
 Route::get('/', function () {
 
     return view('home');
