@@ -2,9 +2,11 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Account;
+use App\Models\User;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ApplicationFavoriteResource extends JsonResource
+class AccountUserResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -14,8 +16,12 @@ class ApplicationFavoriteResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
-            'application_id' => new ApplicationResource($this->applications)
+        $user = User::find($this->user_id);
+        $account = Account::find($this->account_id);
+        return[
+            'user' => $user->surname.' '.$user->name,
+            'user_avatar' => $user->avatar,
+            'account' => $account->title
         ];
     }
 }

@@ -16,13 +16,20 @@ class SubscriptionResource extends JsonResource
     public function toArray($request)
     {
 
+        $user = auth()->user();
+        $gender = $this->user->gender;
+        $action = $gender == 'ж' ? 'подписалась' : 'подписался';
         return [
             'id' => $this->id,
-            'user' => $this->user,
+            $this->mergeWhen($user->hasRole('admin'), [
+                'user' => $this->user->surname . ' ' . $this->user->name,
+                'avatar' => $this->user->avatar,
+                'action' => $action
+            ]),
             'user_email' => $this->user_email,
             'status' => $this->status,
-            'updated_at' => Carbon::now()->sub($this->updated_at)->diffForHumans()
-        ];
 
+            'updated_at' => Carbon::now()->sub($this->updated_at)->diffForHumans(),
+        ];
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Users\EmailController;
+use App\Http\Controllers\PHPMailerController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -54,11 +56,12 @@ require_once "applications/applications.php";
 
 
 
-//Подтверждение E-mail
+//Verify email
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::get('/email/verify', [EmailController::class, 'email_verify'])->name('verification.notice');
+});
 
-Route::get('/email/verify', function () {
-    return view('auth.verify-email');
-})->name('verification.notice');
+
 
 
 

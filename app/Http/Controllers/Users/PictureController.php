@@ -15,32 +15,49 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 
-/**
- * @OA\Get(
- * path="/api/pictures",
- * summary="Картины",
- * description="Получение данных о картинах из базы",
 
- * @OA\Response(
- * response=200,
- * description="Запрос выполнен удачно",
- * ),
- * @OA\Response(
- * response=404,
- * description="Ошибка в запросе",
- * @OA\JsonContent(
- * @OA\Property(property="message", type="string", example="Не найдено")
- * )
- * )
- * )
- */
 class PictureController extends Controller
 {
-
+    /**
+     * @OA\Get(
+     * tags={"users"},
+     * path="/api/main/pictures",
+     * summary="Pictures",
+     * description="Get last pictures",
+     * @OA\Response(
+     * response=200,
+     * description="Success",
+     * @OA\JsonContent(
+     * @OA\Property(property="id", type="integer", example="1"),
+     * @OA\Property(property="title", type="string", example="Картина"),
+     * @OA\Property(property="user", type="string", example="Соня"),
+     * @OA\Property(property="user_avatar", type="string", example="/storage/img/avatar.png"),
+     * @OA\Property(property="genre", type="string", example="Портрет"),
+     * @OA\Property(property="description", type="text", example="Описание картины"),
+     * @OA\Property(property="price", type="float", example="1000"),
+     * @OA\Property(property="discount", type="integer", example="10"),
+     * @OA\Property(property="size", type="string", example="100*100"),
+     * @OA\Property(property="writing_technique", type="string", example="Масло"),
+     * @OA\Property(property="img", type="string", example="/storage/img/portret.jpg"),
+     * @OA\Property(property="created_at", type="string", example="2022-04-16T14:32:03.000000Z"),
+     * )
+     * ),
+     * @OA\Response(
+     * response=404,
+     * description="Not Found",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Not Found")
+     * )
+     * )
+     * )
+     */
 
     public function PicturesMain(){
         $pictures = Picture::query()->limit(5)->orderByDesc('created_at')->get();
-        return PictureResource::collection($pictures);
+        if ($pictures){
+            return PictureResource::collection($pictures);
+        }
+       return response()->json('Не найдено');
     }
 
 //    public function getPictures(Request $request, $id, $sort, $k, $price){
@@ -65,14 +82,57 @@ class PictureController extends Controller
 //        }
 //        return $pictures;
 //    }
+
+
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\Response
+     */
+
+
+    /**
+     * @OA\Get(
+     * tags={"users"},
+     * path="/api/pictures",
+     * summary="Pictures",
+     * description="Get all pictures",
+     * @OA\Response(
+     * response=200,
+     * description="Success",
+     * @OA\JsonContent(
+     * @OA\Property(property="id", type="integer", example="1"),
+     * @OA\Property(property="title", type="string", example="Картина"),
+     * @OA\Property(property="user", type="string", example="Соня"),
+     * @OA\Property(property="user_avatar", type="string", example="/storage/img/avatar.png"),
+     * @OA\Property(property="genre", type="string", example="Портрет"),
+     * @OA\Property(property="description", type="text", example="Описание картины"),
+     * @OA\Property(property="price", type="float", example="1000"),
+     * @OA\Property(property="discount", type="integer", example="10"),
+     * @OA\Property(property="size", type="string", example="100*100"),
+     * @OA\Property(property="writing_technique", type="string", example="Масло"),
+     * @OA\Property(property="img", type="string", example="/storage/img/portret.jpg"),
+     * @OA\Property(property="created_at", type="string", example="2022-04-16T14:32:03.000000Z"),
+     * )
+     * ),
+     * @OA\Response(
+     * response=404,
+     * description="Not Found",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Not Found")
+     * )
+     * )
+     * )
      */
     public function index()
     {
-        return PictureResource::collection(Picture::query()->where('status', '=', 'одобрено')->get());
+        $pictures = Picture::query()->where('status', '=', 'одобрено')->get();
+        if ($pictures){
+            return PictureResource::collection($pictures);
+        }
+        return response()->json([
+            'message' => 'Не найдено'
+        ]);
     }
 
     /**
@@ -90,6 +150,62 @@ class PictureController extends Controller
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     */
+
+    /**
+     *     @OA\Post(
+     *     tags={"executor"},
+     *     path="/api/pictures",
+     *     summary="Pictures",
+     *     description="Create picture",
+     *     security = {{ "Bearer":{} }},
+     *     @OA\RequestBody(
+     *     @OA\MediaType(
+     *     mediaType="application/json",
+     *     @OA\Schema(
+     *     @OA\Property(property="title", type="required,string,max:50"),
+     *     @OA\Property(property="genre_id", type="required,exists:genres,id"),
+     *     @OA\Property(property="description", type="nullable,string,min:10,max:300"),
+     *     @OA\Property(property="price", type="required,numeric,min:1,max:999999"),
+     *     @OA\Property(property="discount", type="nullable,integer,min:1,max:99"),
+     *     @OA\Property(property="size", type="required,string,max:10"),
+     *     @OA\Property(property="writing_technique", type="required,string,max:50"),
+     *     @OA\Property(property="img", type="nullable,file,image,max:1024"),
+     *     example={
+     *     "title":"Портрет",
+     *     "genre_id":"1",
+     *     "description":"Нарисовать портрет",
+     *     "price":"500",
+     *     "discount":"",
+     *     "size":"100*100",
+     *     "writing_technique":"Масло",
+     *     "img":"/storage/img/portret.jpg",
+     *     },
+     *     ),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Картина отправлена на рассмотрение модератору"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=403,
+     *     description="Forbidden",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Forbidden")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=401,
+     *     description="Unauthorized",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Unauthorized")
+     *     ),
+     *     ),
+     *     )
      */
     public function store(Request $request)
     {
@@ -162,16 +278,61 @@ class PictureController extends Controller
      * Display the specified resource.
      *
      * @param \App\Models\Picture $picture
-     * @return \Illuminate\Http\Response
+     * @return PictureResource|\Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     */
+
+    /**
+     *     @OA\Get(
+     *     tags={"users"},
+     *     path="/api/pictures/{id}",
+     *     summary="Pictures",
+     *     description="Find one picture",
+     *     @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Picture Id",
+     *     @OA\Schema(
+     *     type="integer",
+     *     format="int"
+     *     ),
+     *     required=true,
+     *     example=1
+     *     ),
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="id", type="integer", example="1"),
+     *     @OA\Property(property="title", type="string", example="Картина"),
+     *     @OA\Property(property="user", type="string", example="Соня"),
+     *     @OA\Property(property="user_avatar", type="string", example="/storage/img/avatar.png"),
+     *     @OA\Property(property="genre", type="string", example="Портрет"),
+     *     @OA\Property(property="description", type="text", example="Описание картины"),
+     *     @OA\Property(property="price", type="float", example="1000"),
+     *     @OA\Property(property="discount", type="integer", example="10"),
+     *     @OA\Property(property="size", type="string", example="100*100"),
+     *     @OA\Property(property="writing_technique", type="string", example="Масло"),
+     *     @OA\Property(property="img", type="string", example="/storage/img/portret.jpg"),
+     *     @OA\Property(property="created_at", type="string", example="2022-04-16T14:32:03.000000Z"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=404,
+     *     description="Not Found",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Not Found")
+     *     ),
+     *     ),
+     *     )
      */
     public function show($id)
     {
-        $picture = Picture::find($id);
+        $picture = Picture::findOrFail($id);
         if ($picture) {
             return new PictureResource($picture);
         }
         return response()->json([
-            'message' => 'Не существует'
+            'message' => 'Не найдено'
         ]);
     }
 
@@ -192,6 +353,80 @@ class PictureController extends Controller
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Picture $picture
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
+     */
+
+    /**
+     *     @OA\Put(
+     *     tags={"executor"},
+     *     path="/api/pictures/{id}",
+     *     summary="Pictures",
+     *     description="Update picture",
+     *     @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Picture Id",
+     *     @OA\Schema(
+     *     type="integer",
+     *     format="int"
+     *     ),
+     *     required=true,
+     *     example=1
+     *     ),
+     *     security = {{ "Bearer":{} }},
+     *     @OA\RequestBody(
+     *     @OA\MediaType(
+     *     mediaType="application/json",
+     *     @OA\Schema(
+     *     @OA\Property(property="title", type="required,string,max:50"),
+     *     @OA\Property(property="genre_id", type="required,exists:genres,id"),
+     *     @OA\Property(property="description", type="nullable,string,min:10,max:300"),
+     *     @OA\Property(property="price", type="required,numeric,min:1,max:999999"),
+     *     @OA\Property(property="discount", type="nullable,integer,min:1,max:99"),
+     *     @OA\Property(property="size", type="required,string,max:10"),
+     *     @OA\Property(property="writing_technique", type="required,string,max:50"),
+     *     @OA\Property(property="img", type="nullable,file,image,max:1024"),
+     *     example={
+     *     "title":"Портрет",
+     *     "genre_id":"1",
+     *     "description":"Нарисовать портрет",
+     *     "price":"500",
+     *     "discount":"",
+     *     "size":"100*100",
+     *     "writing_technique":"Масло",
+     *     "img":"/storage/img/portret.jpg",
+     *     },
+     *     ),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Картина успешно изменена"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=403,
+     *     description="Forbidden",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Forbidden")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=401,
+     *     description="Unauthorized",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Unauthorized")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=404,
+     *     description="Not Found",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Not Found")
+     *     ),
+     *     ),
+     *     )
      */
     public function update(Request $request, $id)
     {
@@ -261,9 +496,6 @@ class PictureController extends Controller
             'message' => 'Не существует'
         ], 404);
 
-        return response()->json([
-            'message' => 'К сожалению, доступ закрыт'
-        ], 403);
     }
 
     /**
@@ -272,9 +504,58 @@ class PictureController extends Controller
      * @param \App\Models\Picture $picture
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
+
+    /**
+     *     @OA\Delete(
+     *     tags={"executor"},
+     *     path="/api/pictures/{id}",
+     *     summary="Pictures",
+     *     description="Delete picture",
+     *     @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Picture Id",
+     *     @OA\Schema(
+     *     type="integer",
+     *     format="int"
+     *     ),
+     *     required=true,
+     *     example=1
+     *     ),
+     *     security = {{ "Bearer":{} }},
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Картина успешно удалена"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=403,
+     *     description="Forbidden",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Forbidden")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=401,
+     *     description="Unauthorized",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Unauthorized")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=404,
+     *     description="Not Found",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Not Found")
+     *     ),
+     *     ),
+     *     )
+     */
     public function destroy($id)
     {
-        $picture = Picture::find($id);
+        $picture = Picture::findOrFail($id);
         if ($picture) {
             $picture->delete();
             return response()->json([
@@ -285,8 +566,5 @@ class PictureController extends Controller
             'message' => 'Не существует'
         ], 404);
 
-        return response()->json([
-            'message' => 'К сожалению, доступ закрыт'
-        ], 403);
     }
 }

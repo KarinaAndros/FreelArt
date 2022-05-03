@@ -14,23 +14,123 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use function Symfony\Component\Finder\name;
 
 
 class SubscriptionController extends Controller
 {
+    /**
+     * @OA\Get(
+     * tags={"admin"},
+     * path="/api/subscriptions/last",
+     * summary="Subscriptions",
+     * description="Get last subscriptions",
+     * security = {{ "Bearer":{} }},
+     * @OA\Response(
+     * response=200,
+     * description="Success",
+     * @OA\JsonContent(
+     * @OA\Property(property="id", type="integer", example="1"),
+     * @OA\Property(property="user", type="string", example="Иванов Иван"),
+     * @OA\Property(property="action", type="string", example="подписался"),
+     * @OA\Property(property="user_email", type="string", example="ivan@mail.ru"),
+     * @OA\Property(property="status", type="string", example="действительна"),
+     * @OA\Property(property="updated_at", type="string", example="2 seconds ago"),
+     * )
+     * ),
+     * @OA\Response(
+     * response=403,
+     * description="Forbidden",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Forbidden")
+     * ),
+     * ),
+     * @OA\Response(
+     * response=401,
+     * description="Unauthorized",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Unauthorized")
+     * ),
+     * ),
+     * @OA\Response(
+     * response=404,
+     * description="Not Found",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Not Found")
+     * )
+     * )
+     * )
+     */
     public function lastSubscriptions()
     {
-        return SubscriptionResource::collection(Subscription::query()->limit(3)->orderByDesc('created_at')->get());
+        $subscriptions = Subscription::query()->limit(3)->orderByDesc('created_at')->get();
+        if ($subscriptions){
+            return SubscriptionResource::collection($subscriptions);
+        }
+       return response()->json([
+           'message' => 'Не найдено'
+       ]);
     }
 
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+
+    /**
+     * @OA\Get(
+     * tags={"admin"},
+     * path="/api/subscriptions",
+     * summary="Subscriptions",
+     * description="Get all subscriptions",
+     * security = {{ "Bearer":{} }},
+     * @OA\Response(
+     * response=200,
+     * description="Success",
+     * @OA\JsonContent(
+     * @OA\Property(property="id", type="integer", example="1"),
+     * @OA\Property(property="user", type="string", example="Иванов Иван"),
+     * @OA\Property(property="action", type="string", example="подписался"),
+     * @OA\Property(property="user_email", type="string", example="ivan@mail.ru"),
+     * @OA\Property(property="status", type="string", example="действительна"),
+     * @OA\Property(property="updated_at", type="string", example="2 seconds ago"),
+     * )
+     * ),
+     * @OA\Response(
+     * response=403,
+     * description="Forbidden",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Forbidden")
+     * ),
+     * ),
+     * @OA\Response(
+     * response=401,
+     * description="Unauthorized",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Unauthorized")
+     * ),
+     * ),
+     * @OA\Response(
+     * response=404,
+     * description="Not Found",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Not Found")
+     * )
+     * )
+     * )
      */
     public function index()
     {
-        return SubscriptionResource::collection(Subscription::all());
+        $subscriptions = Subscription::all();
+        if ($subscriptions){
+            return SubscriptionResource::collection($subscriptions);
+        }
+        return response()->json([
+            'message' => 'Не найдено'
+        ]);
     }
 
     /**
@@ -51,33 +151,6 @@ class SubscriptionController extends Controller
      */
     public function store(Request $request)
     {
-        $validation = Validator::make($request->all(), [
-            'user_email' => 'required|string|max:50|email|unique:subscriptions',
-        ],
-            [
-                'user_email.max' => 'не более 50 символов',
-                'user_email.email' => 'некоректный тип',
-                'user_email.unique' => 'email уже используется',
-                'user_email.required' => 'обязательно для заполнения',
-            ]);
-
-        if ($validation->fails()) {
-            return response()->json([
-                'user_email_error' => $validation->errors()->first('user_email')
-            ], 400);
-        }
-        $subscription = new Subscription();
-        $subscription->user_id = auth()->user()->id;
-        $subscription->user_email = $request->input('user_email');
-        $subscription->save();
-        Mail::send(['text' => 'mails.subscription'], ['name', 'FreelArt'], function ($message) use ($subscription) {
-            $message->to($subscription->user_email, 'FreelArt')->subject('Рассылка');
-            $message->from('ffreelart@mail.ru', 'FreelArt');
-        });
-//        Notification::send($subscription, new InvoicePaid());
-        return response()->json([
-            'message' => 'Вы подписаны на рассылку'
-        ]);
 
     }
 
@@ -109,6 +182,31 @@ class SubscriptionController extends Controller
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Subscription $subscription
      * @return \Illuminate\Http\JsonResponse
+     */
+
+    /**
+     *     @OA\Put(
+     *     tags={"auth users"},
+     *     path="/api/subscriptions",
+     *     summary="Subscriptions",
+     *     description="Stoping subscription",
+     *     security = {{ "Bearer":{} }},
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message_success", type="string", example="Действительна"),
+     *     @OA\Property(property="message_stop", type="string", example="Приостановлена"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=401,
+     *     description="Unauthorized",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Unauthorized")
+     *     ),
+     *     ),
+     *     )
      */
     public function update()
     {

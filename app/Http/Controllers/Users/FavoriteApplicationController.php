@@ -14,11 +14,64 @@ class FavoriteApplicationController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\Response
+     */
+
+    /**
+     *     @OA\Get(
+     *     tags={"executor"},
+     *     path="/api/favorite_applications",
+     *     summary="Favorite applications",
+     *     description="Get user's favorite applications",
+     *     security = {{ "Bearer":{} }},
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="id", type="integer", example="1"),
+     *     @OA\Property(property="genre", type="string", example="Натюрморт"),
+     *     @OA\Property(property="user", type="string", example="Иван Иванов"),
+     *     @OA\Property(property="user_avatar", type="string", example="/storage/img/avatar.png"),
+     *     @OA\Property(property="application_category", type="string", example="Для всех"),
+     *     @OA\Property(property="description", type="text", example="Нарисовать натюрморт"),
+     *     @OA\Property(property="payment", type="float", example="5000"),
+     *     @OA\Property(property="writing_technique", type="string", example="Акварель"),
+     *     @OA\Property(property="deadline", type="date", example="20.04.2022"),
+     *     @OA\Property(property="updated_at", type="string", example="3 weeks ago"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=403,
+     *     description="Forbidden",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Forbidden")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=401,
+     *     description="Unauthorized",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Unauthorized")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=404,
+     *     description="Not Found",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Not Found")
+     *     ),
+     *     ),
+     *     )
      */
     public function index()
     {
-        return ApplicationResource::collection(auth()->user()->applications);
+        $applications = auth()->user()->applications->all();
+        if ($applications){
+            return ApplicationResource::collection($applications);
+        }
+        return response()->json([
+            'message' => 'В избранном нет ни одной заявки'
+        ]);
     }
 
     /**
@@ -36,6 +89,55 @@ class FavoriteApplicationController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
+     */
+
+    /**
+     *     @OA\Post(
+     *     tags={"executor"},
+     *     path="/api/favorite_applications/{id}",
+     *     summary="Favorite applications",
+     *     description="Add favorite applications",
+     *     security = {{ "Bearer":{} }},
+     *     @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Application Id",
+     *     @OA\Schema(
+     *     type="integer",
+     *     format="int"
+     *     ),
+     *     required=true,
+     *     example=1
+     *     ),
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Добавлено в избранное"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=403,
+     *     description="Forbidden",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Forbidden")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=401,
+     *     description="Unauthorized",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Unauthorized")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=404,
+     *     description="Not Found",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Not Found")
+     *     ),
+     *     ),
+     *     )
      */
     public function store($id)
     {

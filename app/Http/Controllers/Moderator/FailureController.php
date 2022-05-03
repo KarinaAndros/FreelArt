@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Moderator;
 
 use App\Models\Failure;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class FailureController extends Controller
 {

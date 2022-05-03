@@ -20,54 +20,178 @@ use Illuminate\Validation\Rule;
 use Illuminate\Auth\Events\Registered;
 
 
-/**
- * @OA\Post(
- * path="/api/login",
- * summary="Авторизация",
- * description="Авторизация с помощью логина и пароля",
- * @OA\RequestBody(
- * required=true,
- * @OA\JsonContent(
- * required={"login","password"},
- * @OA\Property(property="login", type="string", example="user1"),
- * @OA\Property(property="password", type="string", format="password", example="123456"),
- * ),
- * ),
- * @OA\Response(
- * response=200,
- * description="Авторизация прошла успешно",
- * @OA\JsonContent(
- * @OA\Property(property="message", type="string", example="Авторизация прошла успешно")
- * )
- * ),
- * @OA\Response(
- * response=400,
- * description="Данные не введены",
- * @OA\JsonContent(
- * @OA\Property(property="message", type="string", example="Все поля являются обязательными для заполнения")
- * )
- * ),
- * @OA\Response(
- * response=401,
- * description="Введены неверные данные",
- * @OA\JsonContent(
- * @OA\Property(property="message", type="string", example="Введён неверный логин или пароль")
- * )
- * )
- * )
- */
-
 class UserController extends Controller
 {
 
-    public function lastUsers(){
-        return UserResource::collection(User::query()->limit(3)->orderByDesc('created_at')->get());
-    }
-    public function index()
+
+    /**
+     * @OA\Get(
+     * tags={"admin"},
+     * path="/api/users/last",
+     * summary="New users",
+     * description="Finding of three new users",
+     * security={{ "Bearer":{} }},
+     * @OA\Response(
+     * response=200,
+     * description="Success",
+     * @OA\JsonContent(
+     * @OA\Property(property="id", type="integer", example="1"),
+     * @OA\Property(property="name", type="string", example="Карина"),
+     * @OA\Property(property="surname", type="string", example="Андрос"),
+     * @OA\Property(property="patronymic", type="string", example="Владимировна"),
+     * @OA\Property(property="email", type="email", example="karina.andros@mail.ru"),
+     * @OA\Property(property="avatar", type="string", example="/storage/img/avatar.png"),
+     * @OA\Property(property="phone", type="string", example="+7(904)123-45-67"),
+     * @OA\Property(property="accounts", type="string", example="PRO аккаунт"),
+     * @OA\Property(property="role", type="string", example="admin"),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=401,
+     * description="Unauthorized",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Unauthorized")
+     * ),
+     * ),
+     * @OA\Response(
+     * response=403,
+     * description="Forbidden",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Forbidden")
+     * ),
+     * ),
+     * )
+     */
+    public function lastUsers()
     {
-        return UserResource::collection(User::all());
+        $users = User::query()->limit(3)->orderByDesc('created_at')->get();
+        if (!is_null($users)) {
+            return UserResource::collection($users);
+        }
+        return response()->json([
+            'message' => 'Не найдено'
+        ]);
     }
 
+
+    /**
+     * @OA\Get(
+     * tags={"users"},
+     * path="/api/users",
+     * summary="All users",
+     * description="Finding all users",
+     * security={{ "Bearer":{} }},
+     * @OA\Response(
+     * response=200,
+     * description="Success",
+     * @OA\JsonContent(
+     * @OA\Property(property="id", type="integer", example="1"),
+     * @OA\Property(property="name", type="string", example="Карина"),
+     * @OA\Property(property="surname", type="string", example="Андрос"),
+     * @OA\Property(property="patronymic", type="string", example="Владимировна"),
+     * @OA\Property(property="email", type="email", example="karina.andros@mail.ru"),
+     * @OA\Property(property="avatar", type="string", example="/storage/img/avatar.png"),
+     * @OA\Property(property="phone", type="string", example="+7(904)123-45-67"),
+     * @OA\Property(property="accounts", type="string", example="PRO аккаунт"),
+     * @OA\Property(property="role", type="string", example="admin"),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=401,
+     * description="Unauthorized",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Unauthorized")
+     * ),
+     * ),
+     * )
+     */
+
+    public function index()
+    {
+        $users = User::all();
+        if ($users) {
+            return UserResource::collection(User::all());
+        }
+        return response()->json([
+            'message' => 'Не найдено'
+        ]);
+    }
+
+
+    /**
+     * @OA\Post(
+     * tags={"users"},
+     * path="/api/users",
+     * summary="Registration",
+     * description="User registration",
+     * @OA\RequestBody(
+     * @OA\MediaType(
+     * mediaType="application/json",
+     * @OA\Schema(
+     * @OA\Property(property="name", type="string, required, max:50, regex:/[А-Яа-яЁё]/u"),
+     * @OA\Property(property="surname", type="string, required, max:50, regex:/[А-Яа-яЁё]/u"),
+     * @OA\Property(property="patronymic", type="string, nullable, max:50, regex:/[А-Яа-яЁё]/u"),
+     * @OA\Property(property="login", type="string, required, max:50, regex:/[A-Za-z]/u, unique:users"),
+     * @OA\Property(property="email", type="string, email, required, max:50, unique:users"),
+     * @OA\Property(property="password", type="string, required, max:50, min:6, confirmed"),
+     * @OA\Property(property="password_confirmation", type="string, required, max:50, min:6"),
+     * @OA\Property(property="phone", type="string, nullable, max:50"),
+     * @OA\Property(property="rule", type="tinyInteger, accepted"),
+     * @OA\Property(property="role", type="string, required"),
+     * @OA\Property(property="link", type="string, url, nullable"),
+     * @OA\Property(property="gender", type="string, required"),
+     * example={
+     * "name":"Карина",
+     * "surname":"Андрос",
+     * "patronymic":"",
+     * "login":"Karina",
+     * "email":"karina.andros@mail.ru",
+     * "password":"123456",
+     * "password_confirmation":"123456",
+     * "phone":"123456",
+     * "rule":"1",
+     * "role":"executor",
+     * "link":"",
+     * "gender":"ж",
+     * },
+     * ),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=200,
+     * description="Success",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Регистрация прошла успешно"),
+     * @OA\Property(property="token", type="string", example="1|uPuAXRls1e1D7LUqc10Y8pVK6TOL8NM3BlPX4d9p"),
+     * @OA\Property(property="id", type="integer", example="1"),
+     * @OA\Property(property="name", type="string", example="Карина"),
+     * @OA\Property(property="surname", type="string", example="Андрос"),
+     * @OA\Property(property="email", type="email", example="karina.andros@mail.ru"),
+     * @OA\Property(property="avatar", type="string", example="/storage/img/avatar.png"),
+     * @OA\Property(property="role", type="string", example="executor"),
+     * )
+     * ),
+     * @OA\Response(
+     * response=400,
+     * description="Validation error",
+     * @OA\JsonContent(
+     *  @OA\Property(property="name_error", type="string", example="ошибка валидации"),
+     *  @OA\Property(property="surname_error", type="string", example="ошибка валидации"),
+     *  @OA\Property(property="patronymic_error", type="string", example="ошибка валидации"),
+     *  @OA\Property(property="email_error", type="string", example="ошибка валидации"),
+     *  @OA\Property(property="login_error", type="string", example="ошибка валидации"),
+     *  @OA\Property(property="password_error", type="string", example="ошибка валидации"),
+     *  @OA\Property(property="password_confirmation_error", type="string", example="ошибка валидации"),
+     *  @OA\Property(property="phone_error", type="string", example="ошибка валидации"),
+     *  @OA\Property(property="link_error", type="string", example="ошибка валидации"),
+     *  @OA\Property(property="role_error", type="string", example="ошибка валидации"),
+     *  @OA\Property(property="rule_error", type="string", example="ошибка валидации"),
+     *  @OA\Property(property="gender_error", type="string", example="ошибка валидации"),
+     *  @OA\Property(property="avatar_error", type="string", example="ошибка валидации"),
+     * ),
+     * ),
+     * )
+     */
     public function store(Request $request)
     {
         $validation = Validator::make($request->all(), [
@@ -79,7 +203,7 @@ class UserController extends Controller
             'password' => 'required|string|max:50|min:6|confirmed',
             'password_confirmation' => 'required|string|max:50|min:6',
             'phone' => 'nullable|string|max:50',
-            'avatar' => 'nullable|file|image|max:1024',
+            'gender' => 'required|string',
             'link' => 'nullable|string|url',
             'rule' => 'accepted',
         ],
@@ -108,10 +232,8 @@ class UserController extends Controller
                 'phone.max' => 'не более 50 символов',
                 'role.required' => 'обязательно для заполнения',
                 'rule.accepted' => 'обязательно для потверждения',
-                'avatar.file' => 'должен быть выбран файл',
-                'avatar.image' => 'должно быть выбрано изображение',
-                'avatar.max' => 'не более 1КБ',
                 'link.url' => 'некоректная ссылка',
+                'gender.required' => 'обязательно'
             ]);
         if ($validation->fails()) {
             return response()->json([
@@ -124,16 +246,12 @@ class UserController extends Controller
                 'password_confirmation_error' => $validation->errors()->first('password_confirmation'),
                 'phone_error' => $validation->errors()->first('phone'),
                 'role_error' => $validation->errors()->first('role'),
-                'avatar_error' => $validation->errors()->first('avatar'),
-                'link_error' =>$validation->errors()->first('link'),
+                'link_error' => $validation->errors()->first('link'),
                 'rule_error' => $validation->errors()->first('rule'),
+                'gender_error' => $validation->errors()->first('gender')
             ], 400);
         }
         $user = new User($validation->validated());
-        if ($request->file('img')) {
-            $path = $request->file('img')->store('/img');
-            $user->avatar = '/storage/' . $path;
-        }
         $user->name = $request->input('name');
         $user->surname = $request->input('surname');
         $user->patronymic = $request->input('patronymic');
@@ -147,12 +265,15 @@ class UserController extends Controller
         }
         $user->password = md5($request->input('password'));
         $user->link = $request->input('link');
+        if ($request->input('gender') == 'female') {
+            $user->gender = 'ж';
+        } else {
+            $user->gender = 'м';
+        }
         $user->save();
         event(new Registered($user));
         $token = $user->createToken($request->input('login'))->plainTextToken;
         auth()->login($user);
-
-//        return redirect()->route('verification.notice');
         $account = Account::query()->where('title', 'Базовый аккаунт')->first();
         $account_user = new AccountUser();
         $account_user->user_id = $user->id;
@@ -160,13 +281,65 @@ class UserController extends Controller
         $account_user->start_action = Carbon::now();
         $account_user->save();
         return response()->json([
-            'message' => 'Регистрация прошла успешно',
+            'message' => 'Подтвердите свой почтовый ящик',
             'token' => $token,
             'user' => new UserResource(auth()->user()),
         ], 200);
 
     }
 
+    /**
+     * @OA\Post(
+     * tags={"users"},
+     * path="/api/login",
+     * summary="Login",
+     * description="Login",
+     * @OA\RequestBody(
+     * required=true,
+     * @OA\MediaType(
+     * mediaType="application/json",
+     * @OA\Schema(
+     * @OA\Property(property="login", type="string, required"),
+     * @OA\Property(property="password", type="string, required"),
+     * example={
+     * "login":"Karina",
+     * "password":"123456"
+     * },
+     * ),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=200,
+     * description="Success",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Успешно"),
+     * @OA\Property(property="token", type="string", example="120|lFXMHfJHYSxZpnhfEU2foyN9bcU1BnwoYzjSI73h"),
+     * @OA\Property(property="id", type="integer", example="1"),
+     * @OA\Property(property="name", type="string", example="Карина"),
+     * @OA\Property(property="surname", type="string", example="Андрос"),
+     * @OA\Property(property="patronymic", type="string", example="Владимировна"),
+     * @OA\Property(property="email", type="email", example="karina.andros@mail.ru"),
+     * @OA\Property(property="avatar", type="string", example="/storage/img/avatar.png"),
+     * @OA\Property(property="phone", type="string", example="+7(904)123-45-67"),
+     * @OA\Property(property="role", type="string", example="admin"),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=400,
+     * description="One of the required fields is not filled",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Все поля являются обязательными для заполнения")
+     * ),
+     * ),
+     * @OA\Response(
+     * response=401,
+     * description="Incorrect login or password",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Введён неверный логин или пароль")
+     * ),
+     * ),
+     * )
+     */
     public function login(Request $request)
     {
         $validation = Validator::make($request->all(), [
@@ -200,6 +373,31 @@ class UserController extends Controller
         ], 401);
     }
 
+
+    /**
+     * @OA\Post(
+     * tags={"users"},
+     * path="/api/logout",
+     * summary="Logout",
+     * description="Logout",
+     * security={{ "Bearer":{} }},
+     * @OA\Response(
+     * response=200,
+     * description="Success",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Вы вышли из системы"),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=401,
+     * description="Unauthorized",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Unauthorized")
+     * ),
+     * ),
+     * )
+     */
+
     public function logout(Request $request)
     {
         if ($request->user()) {
@@ -207,6 +405,49 @@ class UserController extends Controller
             return response()->json(['message' => 'Вы вышли из системы'], 200);
         }
     }
+
+    /**
+     * @OA\Get(
+     * tags={"users"},
+     * path="/api/users/{id}",
+     * summary="Find one user",
+     * description="Finding one user",
+     *     @OA\Parameter(
+     *        name="id",
+     *        in="path",
+     *        description="user Id",
+     *        @OA\Schema(
+     *           type="integer",
+     *           format="int"
+     *        ),
+     *        required=true,
+     *        example=1
+     *     ),
+     * @OA\Response(
+     * response=200,
+     * description="Success",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Успешно"),
+     * @OA\Property(property="token", type="string", example="120|lFXMHfJHYSxZpnhfEU2foyN9bcU1BnwoYzjSI73h"),
+     * @OA\Property(property="id", type="integer", example="1"),
+     * @OA\Property(property="name", type="string", example="Карина"),
+     * @OA\Property(property="surname", type="string", example="Андрос"),
+     * @OA\Property(property="patronymic", type="string", example="Владимировна"),
+     * @OA\Property(property="email", type="email", example="karina.andros@mail.ru"),
+     * @OA\Property(property="avatar", type="string", example="/storage/img/avatar.png"),
+     * @OA\Property(property="phone", type="string", example="+7(904)123-45-67"),
+     * @OA\Property(property="role", type="string", example="admin"),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=404,
+     * description="Not found",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Not Found")
+     * ),
+     * ),
+     * )
+     */
 
     public function show($id)
     {
@@ -231,8 +472,103 @@ class UserController extends Controller
     }
 
 
+    /**
+     * @OA\Put(
+     * tags={"users"},
+     * path="/api/users",
+     * summary="Edit data",
+     * description="Edit data in profile",
+     * security={{ "Bearer":{} }},
+     * @OA\RequestBody(
+     * @OA\MediaType(
+     * mediaType="application/json",
+     *     @OA\Schema(
+     *              @OA\Property(
+     *                     description="name",
+     *                     property="name",
+     *                     type="string",
+     *                ),
+     *            @OA\Property(
+     *                     description="surname",
+     *                     property="surname",
+     *                     type="string",
+     *                ),
+     *            @OA\Property(
+     *                     description="patronymic",
+     *                     property="patronymic",
+     *                     type="string",
+     *                ),
+     *            @OA\Property(
+     *                     description="email",
+     *                     property="email",
+     *                     type="string",
+     *                ),
+     *            @OA\Property(
+     *                     description="new_password",
+     *                     property="new_password",
+     *                     type="string",
+     *                ),
+     *            @OA\Property(
+     *                     description="new_password_confirmation",
+     *                     property="new_password_confirmation",
+     *                     type="string",
+     *                ),
+     *               @OA\Property(
+     *                     description="phone",
+     *                     property="phone",
+     *                     type="string",
+     *                ),
+     *               @OA\Property(
+     *                     description="link",
+     *                     property="link",
+     *                     type="string",
+     *                ),
+     *                @OA\Property(
+     *                     description="password",
+     *                     property="password",
+     *                     type="string",
+     *                ),
+     *          required={"name", "surname", "email", "password"},
+     * ),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=200,
+     * description="Success",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Ваши данные успешно изменены"),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=400,
+     * description="Validation error",
+     * @OA\JsonContent(
+     * @OA\Property(property="name_error", type="string", example="ошибка валидации"),
+     * @OA\Property(property="surname_error", type="string", example="ошибка валидации"),
+     * @OA\Property(property="patronymic_error", type="string", example="ошибка валидации"),
+     * @OA\Property(property="email_error", type="string", example="ошибка валидации"),
+     * @OA\Property(property="new_password_error", type="string", example="ошибка валидации"),
+     * @OA\Property(property="new_password_confirmation_error", type="string", example="ошибка валидации"),
+     * @OA\Property(property="phone_error", type="string", example="ошибка валидации"),
+     * @OA\Property(property="link_error", type="string", example="ошибка валидации"),
+     * @OA\Property(property="avatar_error", type="string", example="ошибка валидации"),
+     * @OA\Property(property="password_error", type="string", example="ошибка валидации"),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=401,
+     * description="Unauthorized",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Unauthorized"),
+     * ),
+     * ),
+     * )
+     */
+
+
     public function update(Request $request)
     {
+
         $user = auth()->user();
         $validation = Validator::make($request->all(), [
             'name' => 'required|string|max:50|regex:/[А-Яа-яЁё]/u',
@@ -243,7 +579,6 @@ class UserController extends Controller
             'new_password' => 'nullable|string|max:50|min:6|confirmed',
             'phone' => 'nullable|string|max:50',
             'link' => 'nullable|string|url',
-            'avatar' => 'nullable|file|image|max:1024',
         ],
             [
                 'name.required' => 'обязательно для заполнения',
@@ -266,9 +601,6 @@ class UserController extends Controller
                 'new_password.confirmed' => 'новый пароль не подтверждён',
                 'phone.max' => 'не более 50 символов',
                 'link.url' => 'некоректная ссылка',
-                'avatar.file' => 'должен быть выбран файл',
-                'avatar.image' => 'должно быть выбрано изображение',
-                'avatar.max' => 'не более 1КБ',
             ]);
         if ($validation->fails()) {
             return response()->json([
@@ -286,15 +618,12 @@ class UserController extends Controller
 
         if ($user) {
             if (md5($request->input('password')) == $user->password) {
-                if ($request->file('img')) {
-                    $path = $request->file('img')->store('/img');
-                    $user->avatar = '/storage/' . $path;
-                }
                 $user->name = $request->input('name');
                 $user->surname = $request->input('surname');
                 $user->patronymic = $request->input('patronymic');
                 $user->email = $request->input('email');
                 $user->phone = $request->input('phone');
+                $user->link = $request->input('link');
                 if ($request->input('new_password') !== null) {
                     $user->password = md5($request->input('new_password'));
                 }
@@ -309,8 +638,84 @@ class UserController extends Controller
             ]);
         }
         return response()->json([
-            'message' => 'пользователь не найден'
+            'message' => 'не найдено'
         ]);
+
     }
+
+    /**
+     * @OA\Post(
+     * tags={"users"},
+     * path="/api/avatar",
+     * summary="Edit avatar",
+     * description="Edit avatar in profile",
+     * security={{ "Bearer":{} }},
+     * @OA\RequestBody(
+     * @OA\MediaType(
+     * mediaType="multipart/form-data",
+     *     @OA\Schema(
+     *              @OA\Property(
+     *                     description="avatar",
+     *                     property="avatar",
+     *                     type="file",
+     *     format="file"
+     *                ),
+     * ),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=200,
+     * description="Success",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Аватарка успешно изменена"),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=400,
+     * description="Validation error",
+     * @OA\JsonContent(
+     * @OA\Property(property="avatar_error", type="string", example="ошибка валидации"),
+     * ),
+     * ),
+     * @OA\Response(
+     * response=401,
+     * description="Unauthorized",
+     * @OA\JsonContent(
+     * @OA\Property(property="message", type="string", example="Unauthorized"),
+     * ),
+     * ),
+     * )
+     */
+    public function avatar(Request $request)
+    {
+        $validation = Validator::make($request->all(), [
+            'avatar' => 'nullable|image|max:1024',
+        ],
+            [
+                'avatar.file' => 'должен быть выбран файл',
+                'avatar.image' => 'должно быть выбрано изображение',
+                'avatar.max' => 'не более 1КБ',
+            ]);
+        if ($validation->fails()) {
+            return response()->json([
+                'avatar_error' => $validation->errors()->first('avatar'),
+            ], 400);
+        }
+        $user = auth()->user();
+        if ($request->file('avatar')) {
+            $path = $request->file('avatar')->store('/img');
+            $user->avatar = '/storage/' . $path;
+            $user->save();
+            return response()->json([
+                'message' => 'Аватарка успешно изменена'
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'Выберите файл'
+            ]);
+        }
+
+    }
+
 
 }

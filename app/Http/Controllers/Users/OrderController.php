@@ -8,23 +8,73 @@ use App\Models\Picture;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
+use function Symfony\Component\Routing\Loader\Configurator\collection;
 
 class OrderController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     * @return OrderResource|\Illuminate\Http\JsonResponse|\Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+
+    /**
+     *     @OA\Get(
+     *     tags={"auth users"},
+     *     path="/api/orders",
+     *     summary="Orders",
+     *     description="Get user's orders",
+     *     security = {{ "Bearer":{} }},
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="id", type="integer", example="1"),
+     *     @OA\Property(property="picture_id", type="integer", example="1"),
+     *     @OA\Property(property="picture_name", type="string", example="Картина"),
+     *     @OA\Property(property="amount", type="float", example="20"),
+     *     @OA\Property(property="discount", type="integer", example="10"),
+     *     @OA\Property(property="total", type="float", example="18"),
+     *     @OA\Property(property="address", type="text", example="Адрес пользователя"),
+     *     @OA\Property(property="status", type="string", example="в обработке"),
+     *     @OA\Property(property="created_at", type="string", example="7 seconds ago"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=401,
+     *     description="Unauthorized",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Unauthorized")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=404,
+     *     description="Not Found",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Not Found")
+     *     ),
+     *     ),
+     *     )
      */
     public function index()
     {
+
       if (auth()->user()->hasRole('admin')){
-          return OrderResource::collection(Order::all());
+          $orders = Order::all();
+          if ($orders){
+              return OrderResource::collection($orders);
+          }
       }
       else{
-          $orders = Order::query()->where('user_id', auth()->user()->id)->get();
-          return  OrderResource::collection($orders);
+          $orders = auth()->user()->orders->all();
+          if ($orders){
+              return OrderResource::collection($orders);
+          }
+          return response()->json([
+              'message' => 'Вы пока что ничего не приобрели'
+          ]);
       }
+
     }
 
     /**
@@ -42,6 +92,59 @@ class OrderController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
+     */
+
+    /**
+     *     @OA\Post(
+     *     tags={"auth users"},
+     *     path="/api/orders/{id}",
+     *     summary="Orders",
+     *     description="Create order",
+     *     security = {{ "Bearer":{} }},
+     *     @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Picture Id",
+     *     @OA\Schema(
+     *     type="integer",
+     *     format="int"
+     *     ),
+     *     required=true,
+     *     example=1
+     *     ),
+     *     @OA\RequestBody(
+     *     @OA\MediaType(
+     *     mediaType="application/json",
+     *     @OA\Schema(
+     *     @OA\Property(property="address", type="required, string, min:10, max:150"),
+     *     example={
+     *     "address":"Адрес пользователя",
+     *     },
+     *     ),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Заказ находится в обработке"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=401,
+     *     description="Unauthorized",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Unauthorized")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=404,
+     *     description="Not Found",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Not Found")
+     *     ),
+     *     ),
+     *     )
      */
     public function store(Request $request, $id)
     {

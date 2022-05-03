@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Users\PictureController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Users\ModeratorController;
+use App\Http\Controllers\Moderator\ModeratorController;
 
 Route::group(['middleware' => ['role:moderator']], function () {
 

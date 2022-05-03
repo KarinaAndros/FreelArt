@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Users;
 
+use App\Http\Resources\ApplicationComletedResource;
 use App\Http\Resources\ApplicationResource;
+use App\Http\Resources\ApplicationUserResource;
 use App\Http\Resources\CompletedApplicationResource;
 use App\Models\Account;
 use App\Models\AccountUser;
@@ -21,11 +23,55 @@ class CompletedApplicationController extends Controller
      *
      * @return
      */
+    /**
+     *     @OA\Get(
+     *     tags={"executor"},
+     *     path="/api/completed_applications",
+     *     summary="Completed applications",
+     *     description="Get user's completed applications",
+     *     security = {{ "Bearer":{} }},
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="id", type="integer", example="1"),
+     *     @OA\Property(property="description", type="text", example="Нарисовать натюрморт"),
+     *     @OA\Property(property="genre", type="string", example="Натюрморт"),
+     *     @OA\Property(property="category", type="string", example="Для всех"),
+     *     @OA\Property(property="payment", type="float", example="5000"),
+     *     @OA\Property(property="user", type="string", example="Иван Иванов"),
+     *     @OA\Property(property="user_avatar", type="string", example="/storage/img/avatar.png"),
+     *     @OA\Property(property="complete", type="date", example="10.04.2022"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=403,
+     *     description="Forbidden",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Forbidden")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=401,
+     *     description="Unauthorized",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Unauthorized")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=404,
+     *     description="Not Found",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Not Found")
+     *     ),
+     *     ),
+     *     )
+     */
     public function index()
     {
-        $applications = auth()->user()->completed_applications;
+        $applications = auth()->user()->completed_applications->all();
         if ($applications){
-            return ApplicationResource::collection($applications);
+            return ApplicationComletedResource::collection($applications);
         }
         else{
             return response()->json([
@@ -50,6 +96,56 @@ class CompletedApplicationController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return
      */
+
+    /**
+     *     @OA\Post(
+     *     tags={"executor"},
+     *     path="/api/completed_applications/{id}",
+     *     summary="Completed applications",
+     *     description="Create comleted application",
+     *     security = {{ "Bearer":{} }},
+     *     @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Application Id",
+     *     @OA\Schema(
+     *     type="integer",
+     *     format="int"
+     *     ),
+     *     required=true,
+     *     example=1
+     *     ),
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Заявка выполнена"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=403,
+     *     description="Forbidden",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Forbidden")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=401,
+     *     description="Unauthorized",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Unauthorized")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=404,
+     *     description="Not Found",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Not Found")
+     *     ),
+     *     ),
+     *     )
+     */
+
     public function store($id)
     {
 

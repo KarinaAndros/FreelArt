@@ -17,8 +17,12 @@ class OrderResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'picture_id' => new PictureResource($this->picture),
-            'user_id' => new UserResource($this->user),
+            'picture_id' => $this->picture->id,
+            'picture_name' => $this->picture->title,
+            $this->mergeWhen(auth()->user()->hasRole('admin'), [
+                'user_id' => $this->user->id,
+                'user_name' => $this->user->surname.' '.$this->user->name,
+            ]),
             'amount' => $this->amount,
             'discount' => $this->discount,
             'total' => $this->total,

@@ -17,7 +17,7 @@ Route::group(['middleware' => ['role:executor']], function () {
     Route::post('/favorite_applications/{id}', [FavoriteApplicationController::class, 'store'])->name('favorite_applications.store'); //Добавление заявок в избранное
     Route::get('/favorite_applications', [FavoriteApplicationController::class, 'index'])->name('favorite_applications'); //Получение избранных заявок пользователя
 
-    //Выполненные заявки
+    //Completed applications
     Route::post('/completed_applications/{id}', [CompletedApplicationController::class, 'store'])->name('completed_applications.store'); //Сохранение выполненной заявки в базе (при нажатии на кнопку Выполнено)
     Route::get('/completed_applications', [CompletedApplicationController::class, 'index'])->name('completed_applications.index'); //Получение выполненных заявок
 
