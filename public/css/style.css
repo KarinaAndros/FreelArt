@@ -1,0 +1,142 @@
+.container {
+    width: 1290px;
+    margin: 0 auto;
+}
+
+.art {
+    display: flex;
+    margin-top: 50px;
+    height: 812px;
+    justify-content: space-between;
+}
+
+#art {
+    width: 1186px;
+    height: 812px;
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.54);
+}
+
+.size_brush {
+    width: 100%;
+    text-align: center;
+}
+
+.options button {
+    display: block;
+    margin: 0 auto;
+    margin-bottom: 10px;
+}
+
+.art_buttons {
+    margin-top: 30px;
+}
+
+
+
+
+
+
+.options_inner {
+    width: 39px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+
+    padding-top: 22px;
+
+}
+
+.options {
+    width: 104px;
+    background-color: rgba(87, 119, 130, 1);
+}
+
+.options div {
+    margin: 0 auto;
+    margin-bottom: 10px;
+}
+.options_inner label{
+    color: white;
+}
+
+.brush, .circle, .rectangle, .pouring, .eraser, #clear_button, .save_art {
+    height: 39px;
+    width: 100%;
+    background-size: 70%;
+    cursor: pointer;
+    margin-bottom: 13px;
+    background-repeat: no-repeat;
+    background-position: center;
+
+}
+
+.brush {
+    background-image: url("../img/brush.png");
+}
+
+.circle {
+    background-image: url("../img/circle.png");
+}
+.rectangle{
+    background-image: url("../img/rectangle.png");
+}
+.eraser{
+    background-image: url("../img/eraser.png");
+}
+.pouring{
+    background-image: url("../img/pouring.png");
+}
+#clear_button{
+    background-image: url("../img/clean.png");
+    background-size: 80%;
+    background-position: center;
+}
+.save_art{
+    background-image: url("../img/download.png");
+}
+
+#brush, #brush2, #circle, #rectangle, #eraser, #pouring, .clear_button, .button_save{
+    opacity: 0;
+}
+.size, .opacity_color {
+    width: 100%;
+    color: rgba(87, 119, 130, 1);
+    margin-bottom: 13px;
+    border: none;
+    height: 26px;
+    padding-left: 3px;
+    margin-top: 5px;
+}
+.color_option{
+    color: white;
+}
+.color, .color_pouring{
+    width: 39px;
+    height: 39px;
+    border: none;
+    border-radius: 100%;
+    background-color: rgba(87, 119, 130, 1);
+    margin-bottom: 15px;
+
+}
+
+.sizes_rectangle{
+    width: 100%;
+    display: none;
+    margin-bottom: 21px;
+}
+.sizes_rectangle input{
+    width: 100%;
+}
+.width, .height{
+    border: none;
+    color: #0c5460;
+    outline: none;
+    height: 26px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+.border_after{
+    border-radius: 100%;
+    border: 1px solid white;
+}

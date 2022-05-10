@@ -34,6 +34,7 @@ Route::post('/account_users', [AccountUserController::class, 'store'])->name('ac
 //Favorite
 Route::get('/favorite_pictures', [FavoritePictureController::class, 'index'])->name('favorite_pictures'); //Получение избранных картин пользователя
 Route::post('/favorite_pictures/{id}', [FavoritePictureController::class, 'store'])->name('favorite_pictures.store'); //Добавление картин в избранное
+Route::delete('/favorite_pictures/{id}', [FavoritePictureController::class, 'destroy'])->name('favorite_pictures.delete'); //Удаление картин из избранного
 
 //Application_users
 Route::get('/application_users', [ApplicationUserController::class, 'index'])->name('application_users');

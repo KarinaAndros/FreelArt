@@ -191,10 +191,62 @@ class FavoritePictureController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  \App\Models\FavoritePicture  $favoritePicture
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\Response
      */
-    public function destroy(FavoritePicture $favoritePicture)
+
+    /**
+     *     @OA\Delete(
+     *     tags={"users"},
+     *     path="/api/favorite_pictures/{id}",
+     *     summary="Favorite pictures",
+     *     description="Delete favorite picture",
+     *     security = {{ "Bearer":{} }},
+     *     @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Favorite picture Id",
+     *     @OA\Schema(
+     *     type="integer",
+     *     format="int"
+     *     ),
+     *     required=true,
+     *     example=1
+     *     ),
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Картина удалена из избранного"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=401,
+     *     description="Unauthorized",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Unauthorized")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=404,
+     *     description="Not Found",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Not Found")
+     *     ),
+     *     ),
+     *     )
+     */
+    public function destroy($id)
     {
-        //
+        $favorite_picture = FavoritePicture::findOrFail($id);
+        if ($favorite_picture){
+            $favorite_picture->delete();
+            return response()->json([
+                'message' => 'Картина удалена из избранного'
+            ]);
+        }
+        return response()->json([
+            'message' => 'Не найдено'
+        ]);
+
     }
 }

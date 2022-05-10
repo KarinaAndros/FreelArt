@@ -192,10 +192,68 @@ class FavoriteApplicationController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  \App\Models\FavoriteApplication  $favoriteApplication
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(FavoriteApplication $favoriteApplication)
+
+    /**
+     *     @OA\Delete(
+     *     tags={"executor"},
+     *     path="/api/favorite_applications/{id}",
+     *     summary="Favorite applications",
+     *     description="Delete favorite application",
+     *     security = {{ "Bearer":{} }},
+     *     @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     description="Favorite application Id",
+     *     @OA\Schema(
+     *     type="integer",
+     *     format="int"
+     *     ),
+     *     required=true,
+     *     example=1
+     *     ),
+     *     @OA\Response(
+     *     response=200,
+     *     description="Success",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Заявка удалена из избранного"),
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=403,
+     *     description="Forbidden",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Forbidden")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=401,
+     *     description="Unauthorized",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Unauthorized")
+     *     ),
+     *     ),
+     *     @OA\Response(
+     *     response=404,
+     *     description="Not Found",
+     *     @OA\JsonContent(
+     *     @OA\Property(property="message", type="string", example="Not Found")
+     *     ),
+     *     ),
+     *     )
+     */
+    public function destroy($id)
     {
-        //
+        $favorite_application = FavoriteApplication::findOrFail($id);
+        if ($favorite_application){
+            $favorite_application->delete();
+            return response()->json([
+                'message' => 'Заявка удалена из избранного'
+            ]);
+        }
+        return response()->json([
+            'message' => 'Не найдено'
+        ]);
     }
 }
